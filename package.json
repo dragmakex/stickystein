@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "scrape": "bun scrape_e.js"
+  },
+  "dependencies": {
+    "playwright": "^1.58.1"
+  }
+}
