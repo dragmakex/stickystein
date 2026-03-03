@@ -1,3 +1,9 @@
-.scrape-logs/
+.next
+node_modules
+.env
+.env.local
+.reference
+coverage
+tsconfig.tsbuildinfo
+.scrape-logs
 data/
-node_modules/

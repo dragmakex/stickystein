@@ -1,0 +1,21 @@
+.git
+.gitignore
+next-env.d.ts
+.next
+node_modules
+coverage
+.scrape-logs
+.reference
+.env
+.env.*
+*.log
+tsconfig.tsbuildinfo
+
+# Keep large/local corpus out of image build context.
+data/
+
+# Docs and local notes are optional for runtime image.
+LEARNINGS.md
+TODO.md
+AGENT.md
+PROMPT.md

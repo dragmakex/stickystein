@@ -1,8 +1,44 @@
 {
+  "name": "e-files-rag",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
   "scripts": {
-    "scrape": "bun scrape_e.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
+    "test:e2e": "bun test tests/e2e",
+    "check": "bun run lint && bun run typecheck && bun test",
+    "db:migrate": "bun run scripts/migrate.ts",
+    "db:migrate:status": "bun run scripts/migrate.ts --status",
+    "index:corpus": "bun run scripts/index-corpus.ts",
+    "worker": "bun run scripts/run-worker.ts",
+    "smoke:glm": "bun run scripts/smoke-glm.ts",
+    "scrape": "bun scripts/scrape_e.js",
+    "prepare": "effect-language-service patch"
   },
   "dependencies": {
-    "playwright": "^1.58.1"
+    "@effect/platform": "latest",
+    "effect": "latest",
+    "next": "latest",
+    "pdf-parse": "latest",
+    "postgres": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@effect/language-service": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "bun-types": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "typescript": "latest"
   }
 }

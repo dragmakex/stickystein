@@ -103,12 +103,15 @@ test('extractMaxPageFromHtml finds the highest page index from pager hrefs', () 
   expect(max).toBe(9423)
 })
 
-test('attached dataset 9 page 0 snapshot contains links and a discoverable max page', async () => {
-  const htmlPath = path.join(
-    process.cwd(),
-    'Department of Justice _ Data Set 9 Files _ United States Department of Justice.html'
-  )
-  const html = await fs.promises.readFile(htmlPath, 'utf8')
+const attachedSnapshotPath = path.join(
+  process.cwd(),
+  'Department of Justice _ Data Set 9 Files _ United States Department of Justice.html'
+)
+
+const maybeSnapshotTest = fs.existsSync(attachedSnapshotPath) ? test : test.skip
+
+maybeSnapshotTest('attached dataset 9 page 0 snapshot contains links and a discoverable max page', async () => {
+  const html = await fs.promises.readFile(attachedSnapshotPath, 'utf8')
 
   const links = extractPdfLinksFromHtml(
     html,
