@@ -233,6 +233,12 @@ a:focus-visible {
   font-size: 13px;
 }
 
+.status-table-availability {
+  width: 96px;
+  text-align: center;
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
   .container {
     padding: 12px;

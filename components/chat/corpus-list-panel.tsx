@@ -55,14 +55,14 @@ export function CorpusListPanel() {
             <thead>
               <tr>
                 <th align="left">File</th>
-                <th align="left">Available</th>
+                <th className="status-table-availability">Available</th>
               </tr>
             </thead>
             <tbody>
               {pagedDocuments.map((document) => (
                 <tr key={document.documentId}>
                   <td>{document.filename}</td>
-                  <td>{document.status === "ready" ? "Yes" : "No"}</td>
+                  <td className="status-table-availability">{document.status === "ready" ? "✓" : ""}</td>
                 </tr>
               ))}
               {!loading && pagedDocuments.length === 0 ? (
