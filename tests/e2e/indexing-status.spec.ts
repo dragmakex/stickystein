@@ -10,5 +10,5 @@ test("home page links into chat", () => {
   expect(html).toContain("Stickystein")
   expect(html).toContain("Ask questions over the Epstein PDFs with citations.")
   expect(html).toContain('href="/chat"')
-  expect(html).not.toContain("Corpus Index Status")
+  expect(html).toContain("Indexed PDFs")
 })

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { CorpusListPanel } from "@/components/chat/corpus-list-panel"
 import { SecondaryButtonLink } from "@/components/ui/button"
 
 export default function HomePage() {
@@ -27,6 +28,7 @@ export default function HomePage() {
           <SecondaryButtonLink href="/chat">Open chat</SecondaryButtonLink>
         </div>
       </section>
+      <CorpusListPanel />
     </main>
   )
 }

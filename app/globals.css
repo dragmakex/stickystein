@@ -108,13 +108,18 @@ a:focus-visible {
 
 .landing-shell {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
 }
 
 .landing-card {
   width: min(100%, 720px);
+}
+
+.corpus-card {
+  width: min(100%, 960px);
 }
 
 .landing-titlebar {
@@ -179,6 +184,31 @@ a:focus-visible {
   line-height: 1.4;
 }
 
+.corpus-panel {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.corpus-panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.corpus-meta {
+  margin: 0;
+  font-size: 13px;
+}
+
+.corpus-pagination {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -210,6 +240,10 @@ a:focus-visible {
 
   .landing-copy {
     padding: 24px 18px 28px;
+  }
+
+  .corpus-panel {
+    padding: 12px;
   }
 
   .status-table {
