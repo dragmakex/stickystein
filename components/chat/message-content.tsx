@@ -31,7 +31,7 @@ const renderInline = (text: string): ReactNode[] => {
   return nodes
 }
 
-const isOrderedListItem = (line: string): boolean => /^\d+\.\s+/.test(line)
+const isOrderedListItem = (line: string): boolean => /^\s*\d+\.\s+/.test(line)
 const isUnorderedListItem = (line: string): boolean => /^\s*[-*]\s+/.test(line)
 
 export function MessageContent({ content }: { content: string }) {
@@ -49,7 +49,7 @@ export function MessageContent({ content }: { content: string }) {
     if (isOrderedListItem(line)) {
       const items: Array<{ text: string; nested: string[] }> = []
       while (index < lines.length && isOrderedListItem(lines[index].trimEnd())) {
-        const value = lines[index].trimEnd().replace(/^\d+\.\s+/, "")
+        const value = lines[index].trimEnd().replace(/^\s*\d+\.\s+/, "")
         const item = { text: value, nested: [] as string[] }
         index += 1
 

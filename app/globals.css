@@ -305,7 +305,22 @@ a:focus-visible {
   display: inline-block;
   width: 1.5em;
   text-align: left;
-  animation: chat-loading-dots 1.2s steps(4, end) infinite;
+}
+
+.chat-loading-dots[data-step="0"]::after {
+  content: "";
+}
+
+.chat-loading-dots[data-step="1"]::after {
+  content: ".";
+}
+
+.chat-loading-dots[data-step="2"]::after {
+  content: "..";
+}
+
+.chat-loading-dots[data-step="3"]::after {
+  content: "...";
 }
 
 .win-spinner {
@@ -346,21 +361,6 @@ a:focus-visible {
   }
 }
 
-@keyframes chat-loading-dots {
-  0% {
-    content: "";
-  }
-  25% {
-    content: ".";
-  }
-  50% {
-    content: "..";
-  }
-  75%,
-  100% {
-    content: "...";
-  }
-}
 
 .sr-only {
   position: absolute;

@@ -27,6 +27,7 @@ export function ChatShell() {
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loadingNote, setLoadingNote] = useState("Consulting the files")
+  const [loadingTick, setLoadingTick] = useState(0)
 
   const refreshMessages = async (activeThreadId: string) => {
     const refreshed = await fetch(`/api/threads/${activeThreadId}/messages`)
@@ -41,6 +42,21 @@ export function ChatShell() {
       setThreadId(body.threadId)
     })()
   }, [])
+
+  useEffect(() => {
+    if (!pending) {
+      setLoadingTick(0)
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      setLoadingTick((current) => (current + 1) % 4)
+    }, 600)
+
+    return () => {
+      window.clearInterval(interval)
+    }
+  }, [pending])
 
   const onSend = async (question: string) => {
     if (!threadId) return
@@ -137,7 +153,7 @@ export function ChatShell() {
           <div>
             <div className="chat-loading-title">
               {loadingNote}
-              <span className="chat-loading-dots" aria-hidden="true" />
+              <span className="chat-loading-dots" aria-hidden="true" data-step={loadingTick} />
             </div>
           </div>
           <div className="win-spinner" aria-hidden="true">
