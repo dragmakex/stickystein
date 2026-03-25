@@ -28,7 +28,7 @@ export default function HomePage() {
         </div>
         <div className="landing-copy">
           <h2 className="landing-heading">Stickystein</h2>
-          <p className="landing-description">Ask questions over the Epstein PDFs with citations.</p>
+          <p className="landing-description">Ask questions over the Epstein PDFs.</p>
           <SecondaryButtonLink href="/chat">Open chat</SecondaryButtonLink>
         </div>
       </section>
