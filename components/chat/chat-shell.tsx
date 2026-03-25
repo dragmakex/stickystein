@@ -61,11 +61,11 @@ export function ChatShell() {
 
     const dotInterval = window.setInterval(() => {
       setLoadingTick((current) => (current + 1) % 4)
-    }, 600)
+    }, 1800)
 
     const phraseInterval = window.setInterval(() => {
       setLoadingPhraseIndex((current) => (current + 1) % loadingPhrases.length)
-    }, 1800)
+    }, 5400)
 
     return () => {
       window.clearInterval(dotInterval)
