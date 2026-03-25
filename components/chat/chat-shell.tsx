@@ -26,8 +26,16 @@ export function ChatShell() {
   const [messages, setMessages] = useState<ReadonlyArray<ChatMessage>>([])
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadingNote, setLoadingNote] = useState("Consulting the files")
+  const loadingPhrases = [
+    "Consulting the files",
+    "Looking through the indexed documents",
+    "Pulling the most relevant pages",
+    "Comparing overlapping evidence",
+    "Writing an answer from the selected files only"
+  ]
+  const [loadingNote, setLoadingNote] = useState(loadingPhrases[0])
   const [loadingTick, setLoadingTick] = useState(0)
+  const [loadingPhraseIndex, setLoadingPhraseIndex] = useState(0)
 
   const refreshMessages = async (activeThreadId: string) => {
     const refreshed = await fetch(`/api/threads/${activeThreadId}/messages`)
@@ -46,17 +54,29 @@ export function ChatShell() {
   useEffect(() => {
     if (!pending) {
       setLoadingTick(0)
+      setLoadingPhraseIndex(0)
+      setLoadingNote(loadingPhrases[0])
       return
     }
 
-    const interval = window.setInterval(() => {
+    const dotInterval = window.setInterval(() => {
       setLoadingTick((current) => (current + 1) % 4)
     }, 600)
 
+    const phraseInterval = window.setInterval(() => {
+      setLoadingPhraseIndex((current) => (current + 1) % loadingPhrases.length)
+    }, 1800)
+
     return () => {
-      window.clearInterval(interval)
+      window.clearInterval(dotInterval)
+      window.clearInterval(phraseInterval)
     }
   }, [pending])
+
+  useEffect(() => {
+    if (!pending) return
+    setLoadingNote(loadingPhrases[loadingPhraseIndex] ?? loadingPhrases[0])
+  }, [loadingPhraseIndex, pending])
 
   const onSend = async (question: string) => {
     if (!threadId) return
@@ -67,7 +87,8 @@ export function ChatShell() {
     ])
     setPending(true)
     setError(null)
-    setLoadingNote("Consulting the files")
+    setLoadingPhraseIndex(0)
+    setLoadingNote(loadingPhrases[0])
 
     try {
       const response = await fetch("/api/chat/stream", {
@@ -136,7 +157,8 @@ export function ChatShell() {
       setError("Unexpected error while sending message")
     } finally {
       setPending(false)
-      setLoadingNote("Consulting the files")
+      setLoadingPhraseIndex(0)
+      setLoadingNote(loadingPhrases[0])
     }
   }
 
