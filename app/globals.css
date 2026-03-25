@@ -136,23 +136,23 @@ a:focus-visible {
 
 .landing-titlebar-controls {
   display: inline-flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .landing-titlebar-button {
-  min-width: 18px;
-  height: 18px;
+  width: 18px;
+  height: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  line-height: 1;
+  flex: 0 0 auto;
   color: #111;
-  background: var(--surface-raised);
+  background: linear-gradient(180deg, #f5f4f1, #d0ccc8);
   border-top: 1px solid var(--border-light);
   border-left: 1px solid var(--border-light);
   border-right: 1px solid var(--border-deep);
   border-bottom: 1px solid var(--border-deep);
+  box-shadow: inset 1px 1px 0 #ece9e4;
 }
 
 .landing-titlebar-button-link {
@@ -161,6 +161,75 @@ a:focus-visible {
 
 .landing-titlebar-button-link:visited {
   color: #111;
+}
+
+.landing-titlebar-button-link:hover {
+  background: linear-gradient(180deg, #f5f4f1, #d0ccc8);
+}
+
+.landing-titlebar-button:active,
+.landing-titlebar-button-link:active {
+  border-top: 1px solid var(--border-deep);
+  border-left: 1px solid var(--border-deep);
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: inset 1px 1px 0 #7d7a76;
+}
+
+.landing-titlebar-icon {
+  position: relative;
+  display: block;
+  width: 10px;
+  height: 10px;
+  color: #111;
+}
+
+.landing-titlebar-icon-minimize::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  height: 2px;
+  background: currentColor;
+}
+
+.landing-titlebar-icon-maximize::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 2px solid currentColor;
+  background: transparent;
+}
+
+.landing-titlebar-icon-maximize::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 1px;
+  height: 2px;
+  background: currentColor;
+}
+
+.landing-titlebar-icon-close::before,
+.landing-titlebar-icon-close::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 4px;
+  width: 2px;
+  height: 10px;
+  background: currentColor;
+  transform-origin: center;
+}
+
+.landing-titlebar-icon-close::before {
+  transform: rotate(45deg);
+}
+
+.landing-titlebar-icon-close::after {
+  transform: rotate(-45deg);
 }
 
 .landing-copy {

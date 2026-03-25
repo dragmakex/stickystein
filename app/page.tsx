@@ -9,8 +9,12 @@ export default function HomePage() {
         <div className="window-title landing-titlebar">
           <span className="landing-titlebar-label">STICKYSTEIN.EXE</span>
           <span className="landing-titlebar-controls">
-            <span className="landing-titlebar-button">_</span>
-            <span className="landing-titlebar-button">□</span>
+            <span className="landing-titlebar-button" aria-hidden="true">
+              <span className="landing-titlebar-icon landing-titlebar-icon-minimize" />
+            </span>
+            <span className="landing-titlebar-button" aria-hidden="true">
+              <span className="landing-titlebar-icon landing-titlebar-icon-maximize" />
+            </span>
             <Link
               href="https://alxstai.com"
               target="_blank"
@@ -18,7 +22,7 @@ export default function HomePage() {
               className="landing-titlebar-button landing-titlebar-button-link"
               aria-label="Open alxstai.com"
             >
-              X
+              <span className="landing-titlebar-icon landing-titlebar-icon-close" />
             </Link>
           </span>
         </div>
