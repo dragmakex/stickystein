@@ -1,11 +1,12 @@
 import { execFile as execFileCallback } from "node:child_process"
-import { readFile, mkdtemp, rm } from "node:fs/promises"
+import { access, readFile, mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { promisify } from "node:util"
 
 import { PDFParse } from "pdf-parse"
 
+import { env } from "@/lib/env"
 import { normalizePageText } from "@/server/ingestion/normalize"
 
 const execFile = promisify(execFileCallback)
@@ -55,50 +56,98 @@ const ocrPdfPage = async (filePath: string, pageNumber: number): Promise<string>
 
 const shouldUseOcr = (text: string): boolean => text.length < OCR_TEXT_THRESHOLD
 
-export const parsePdfByPage = async (filePath: string): Promise<ParsedPdf> => {
-  const bytes = await readFile(filePath)
-  const parser = new PDFParse({ data: bytes })
-  const parsed = await parser.getText()
-  const canUseOcr = await hasOcrDependencies()
+const preprocessPdf = async (
+  filePath: string
+): Promise<{ readonly filePath: string; readonly warnings: ReadonlyArray<string>; readonly cleanup: () => Promise<void> }> => {
+  if (!env.pdfPreprocessCommand) {
+    return {
+      filePath,
+      warnings: [],
+      cleanup: async () => {}
+    }
+  }
 
-  const pages = await Promise.all(
-    parsed.pages.map(async (page) => {
-      const normalizedText = normalizePageText(page.text)
-      const warnings: string[] = normalizedText.length === 0 ? ["empty-page"] : []
+  const workDir = await mkdtemp(path.join(tmpdir(), "stickystein-preprocess-"))
+  const outputPath = path.join(workDir, "preprocessed.pdf")
 
-      if (!canUseOcr || !shouldUseOcr(normalizedText)) {
-        return {
-          pageNumber: page.num,
-          text: normalizedText,
-          warnings
-        }
+  try {
+    await execFile("sh", ["-c", env.pdfPreprocessCommand], {
+      env: {
+        ...process.env,
+        INPUT_FILE: filePath,
+        OUTPUT_FILE: outputPath
       }
+    })
+    await access(outputPath)
 
-      try {
-        const ocrText = await ocrPdfPage(filePath, page.num)
-        if (ocrText.length > normalizedText.length) {
+    return {
+      filePath: outputPath,
+      warnings: ["pdf-preprocessed"],
+      cleanup: async () => {
+        await rm(workDir, { recursive: true, force: true })
+      }
+    }
+  } catch {
+    await rm(workDir, { recursive: true, force: true })
+    return {
+      filePath,
+      warnings: ["pdf-preprocess-failed"],
+      cleanup: async () => {}
+    }
+  }
+}
+
+export const parsePdfByPage = async (filePath: string): Promise<ParsedPdf> => {
+  const prepared = await preprocessPdf(filePath)
+  const bytes = await readFile(prepared.filePath)
+  const parser = new PDFParse({ data: bytes })
+
+  try {
+    const parsed = await parser.getText()
+    const canUseOcr = await hasOcrDependencies()
+
+    const pages = await Promise.all(
+      parsed.pages.map(async (page) => {
+        const normalizedText = normalizePageText(page.text)
+        const warnings: string[] = normalizedText.length === 0 ? ["empty-page"] : []
+        warnings.push(...prepared.warnings)
+
+        if (!canUseOcr || !shouldUseOcr(normalizedText)) {
           return {
             pageNumber: page.num,
-            text: ocrText,
-            warnings: [...warnings, "ocr-fallback"]
+            text: normalizedText,
+            warnings
           }
         }
 
-        return {
-          pageNumber: page.num,
-          text: normalizedText,
-          warnings: [...warnings, "ocr-no-improvement"]
-        }
-      } catch {
-        return {
-          pageNumber: page.num,
-          text: normalizedText,
-          warnings: [...warnings, "ocr-failed"]
-        }
-      }
-    })
-  )
+        try {
+          const ocrText = await ocrPdfPage(prepared.filePath, page.num)
+          if (ocrText.length > normalizedText.length) {
+            return {
+              pageNumber: page.num,
+              text: ocrText,
+              warnings: [...warnings, "ocr-fallback"]
+            }
+          }
 
-  await parser.destroy()
-  return { pageCount: parsed.total, pages }
+          return {
+            pageNumber: page.num,
+            text: normalizedText,
+            warnings: [...warnings, "ocr-no-improvement"]
+          }
+        } catch {
+          return {
+            pageNumber: page.num,
+            text: normalizedText,
+            warnings: [...warnings, "ocr-failed"]
+          }
+        }
+      })
+    )
+
+    return { pageCount: parsed.total, pages }
+  } finally {
+    await parser.destroy()
+    await prepared.cleanup()
+  }
 }

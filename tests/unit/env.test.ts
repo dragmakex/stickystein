@@ -9,6 +9,7 @@ const baseEnv = {
   SESSION_SECRET: "",
   DATABASE_URL: "",
   PDF_DATA_DIR: "data",
+  PDF_PREPROCESS_COMMAND: "",
   LLM_PROVIDER: "openai-compatible",
   LLM_API_KEY: "",
   LLM_BASE_URL: "",
@@ -21,6 +22,8 @@ const baseEnv = {
   EMBEDDING_BASE_URL: "",
   EMBEDDING_MODEL: "",
   EMBEDDING_DIMENSIONS: "128",
+  EMBEDDING_TIMEOUT_MS: "120000",
+  EMBEDDING_BATCH_SIZE: "16",
   RAG_CHUNK_SIZE: "1200",
   RAG_CHUNK_OVERLAP: "150",
   RAG_TOP_K_VECTOR: "20",
@@ -48,6 +51,8 @@ test("parseEnvironment applies defaults and accepts valid dev config", () => {
   expect(env.nodeEnv).toBe("development")
   expect(env.pdfDataDir).toBe("data")
   expect(env.embeddings.provider).toBe("mock")
+  expect(env.embeddings.timeoutMs).toBe(120000)
+  expect(env.embeddings.batchSize).toBe(16)
   expect(env.rateLimit.chatMax).toBe(10)
 })
 
@@ -56,7 +61,8 @@ test("parseEnvironment accepts openai-compatible and custom pdf data dir", () =>
     makeEnv({
       LLM_PROVIDER: "openai-compatible",
       LLM_API_KEY: "token",
-      PDF_DATA_DIR: "/srv/e-files/pdfs"
+      PDF_DATA_DIR: "/srv/e-files/pdfs",
+      PDF_PREPROCESS_COMMAND: "python3 scripts/unmask.py \"$INPUT_FILE\" \"$OUTPUT_FILE\""
     }),
     "fallback-secret-32-characters--okok"
   )
@@ -64,6 +70,7 @@ test("parseEnvironment accepts openai-compatible and custom pdf data dir", () =>
   expect(env.llm.provider).toBe("openai-compatible")
   expect(env.llm.apiKey).toBe("token")
   expect(env.pdfDataDir).toBe("/srv/e-files/pdfs")
+  expect(env.pdfPreprocessCommand).toBe("python3 scripts/unmask.py \"$INPUT_FILE\" \"$OUTPUT_FILE\"")
 })
 
 test("parseEnvironment enforces production required secrets", () => {

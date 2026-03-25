@@ -10,6 +10,7 @@ import { insertMessage } from "@/server/repositories/chat-repo"
 
 const NO_EVIDENCE_RESPONSE = "I could not find enough evidence in the indexed documents. Please try a more specific question."
 const TEMPORARY_FAILURE_RESPONSE = "I could not complete answer generation right now. Please try again in a moment."
+const RETRIEVAL_FAILURE_RESPONSE = "I could not search the indexed documents right now. Please try again in a moment."
 
 type FailureCategory = "retrieval_error" | "llm_timeout" | "llm_error"
 
@@ -30,6 +31,7 @@ export type AnswerQuestionDependencies = {
   readonly buildUserPrompt: typeof buildUserPrompt
   readonly toCitation: typeof toCitation
   readonly noEvidenceResponse: string
+  readonly retrievalFailureResponse: string
   readonly temporaryFailureResponse: string
 }
 
@@ -42,6 +44,7 @@ const defaultDependencies: AnswerQuestionDependencies = {
   buildUserPrompt,
   toCitation,
   noEvidenceResponse: NO_EVIDENCE_RESPONSE,
+  retrievalFailureResponse: RETRIEVAL_FAILURE_RESPONSE,
   temporaryFailureResponse: TEMPORARY_FAILURE_RESPONSE
 }
 
@@ -58,9 +61,11 @@ export const createAnswerQuestion = (dependencies: AnswerQuestionDependencies) =
 ): Promise<AnswerQuestionResult> => {
   const userMessage = await dependencies.insertMessage({ threadId, role: "user", content: question })
   let retrieved = [] as Awaited<ReturnType<typeof dependencies.hybridRetrieve>>
+  let retrievalFailed = false
   try {
     retrieved = await dependencies.hybridRetrieve(question)
   } catch (error) {
+    retrievalFailed = true
     logger.error("chat.retrieval_failed", {
       category: "retrieval_error",
       threadId,
@@ -70,7 +75,9 @@ export const createAnswerQuestion = (dependencies: AnswerQuestionDependencies) =
   const selected = dependencies.assembleContextChunks(retrieved)
 
   let generated: { text: string }
-  if (selected.length === 0) {
+  if (retrievalFailed) {
+    generated = { text: dependencies.retrievalFailureResponse }
+  } else if (selected.length === 0) {
     generated = { text: dependencies.noEvidenceResponse }
   } else {
     try {

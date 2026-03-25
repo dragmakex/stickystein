@@ -8,6 +8,7 @@ const EnvSchema = Schema.Struct({
   SESSION_SECRET: Schema.optional(Schema.String),
   DATABASE_URL: Schema.optional(Schema.String),
   PDF_DATA_DIR: Schema.optional(Schema.String),
+  PDF_PREPROCESS_COMMAND: Schema.optional(Schema.String),
   LLM_PROVIDER: Schema.optional(Schema.String),
   LLM_API_KEY: Schema.optional(Schema.String),
   LLM_BASE_URL: Schema.optional(Schema.String),
@@ -16,6 +17,8 @@ const EnvSchema = Schema.Struct({
   EMBEDDING_API_KEY: Schema.optional(Schema.String),
   EMBEDDING_BASE_URL: Schema.optional(Schema.String),
   EMBEDDING_MODEL: Schema.optional(Schema.String),
+  EMBEDDING_TIMEOUT_MS: Schema.optional(Schema.String),
+  EMBEDDING_BATCH_SIZE: Schema.optional(Schema.String),
   ADMIN_INGEST_TOKEN: Schema.optional(Schema.String),
   X402_ENABLED: Schema.optional(Schema.String),
   X402_FACILITATOR_URL: Schema.optional(Schema.String),
@@ -105,6 +108,7 @@ export const parseEnvironment = (processEnv: NodeJS.ProcessEnv, fallbackSessionS
     sessionSecret,
     databaseUrl: parsedRaw.DATABASE_URL ?? "",
     pdfDataDir: parsedRaw.PDF_DATA_DIR ?? "data",
+    pdfPreprocessCommand: parsedRaw.PDF_PREPROCESS_COMMAND ?? "",
     llm: {
       provider: oneOf("LLM_PROVIDER", parsedRaw.LLM_PROVIDER, "openai-compatible", ["openai-compatible", "mock"]),
       apiKey: parsedRaw.LLM_API_KEY ?? "",
@@ -119,7 +123,9 @@ export const parseEnvironment = (processEnv: NodeJS.ProcessEnv, fallbackSessionS
       apiKey: parsedRaw.EMBEDDING_API_KEY ?? "",
       baseUrl: parsedRaw.EMBEDDING_BASE_URL ?? "",
       model: parsedRaw.EMBEDDING_MODEL ?? "",
-      dimensions: parseInteger("EMBEDDING_DIMENSIONS", processEnv.EMBEDDING_DIMENSIONS, 128)
+      dimensions: parseInteger("EMBEDDING_DIMENSIONS", processEnv.EMBEDDING_DIMENSIONS, 128),
+      timeoutMs: parseInteger("EMBEDDING_TIMEOUT_MS", processEnv.EMBEDDING_TIMEOUT_MS, 120000),
+      batchSize: parseInteger("EMBEDDING_BATCH_SIZE", processEnv.EMBEDDING_BATCH_SIZE, 16)
     },
     rag: {
       chunkSize: parseInteger("RAG_CHUNK_SIZE", processEnv.RAG_CHUNK_SIZE, 1200),

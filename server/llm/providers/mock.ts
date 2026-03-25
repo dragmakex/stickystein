@@ -10,6 +10,11 @@ export const MockLlmProvider: LlmProvider = {
       providerRequestId: "mock-req"
     }
   },
+  async streamGenerate(input, onDelta) {
+    const output = await this.generate(input)
+    await onDelta(output.text)
+    return output
+  },
   async healthcheck() {
     return { ok: true }
   }

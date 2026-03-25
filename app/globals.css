@@ -288,6 +288,14 @@ a:focus-visible {
   background: #f3f0ed;
 }
 
+.chat-loading-inline {
+  padding: 4px 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .chat-loading-title {
   font-size: 13px;
 }
@@ -358,6 +366,38 @@ a:focus-visible {
   width: 96px;
   text-align: center;
   white-space: nowrap;
+}
+
+.message-markdown {
+  display: grid;
+  gap: 10px;
+}
+
+.message-markdown-paragraph {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.message-markdown-list {
+  margin: 0;
+  padding-left: 24px;
+  line-height: 1.5;
+}
+
+.message-markdown ul,
+.message-markdown ol {
+  margin-top: 8px;
+}
+
+.message-markdown code {
+  padding: 1px 4px;
+  background: #e7e3df;
+  border-top: 1px solid var(--border-light);
+  border-left: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-dark);
+  border-bottom: 1px solid var(--border-dark);
+  font-family: "Lucida Console", "Courier New", monospace;
+  font-size: 0.95em;
 }
 
 @media (max-width: 900px) {

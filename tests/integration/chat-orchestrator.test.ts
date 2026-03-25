@@ -38,6 +38,7 @@ test("answer orchestrator generates grounded answer with citations and metadata"
     buildUserPrompt: (question, chunks) => `${question}::${chunks.length}`,
     toCitation,
     noEvidenceResponse: "no evidence",
+    retrievalFailureResponse: "retrieval failure",
     temporaryFailureResponse: "temporary failure"
   })
 
@@ -82,6 +83,7 @@ test("answer orchestrator strips think blocks from llm output", async () => {
     buildUserPrompt: () => "unused",
     toCitation,
     noEvidenceResponse: "No evidence found.",
+    retrievalFailureResponse: "Retrieval failure.",
     temporaryFailureResponse: "Temporary failure."
   })
 
@@ -113,6 +115,7 @@ test("answer orchestrator returns no-evidence fallback without calling llm", asy
     buildUserPrompt: () => "unused",
     toCitation,
     noEvidenceResponse: "No evidence found.",
+    retrievalFailureResponse: "Retrieval failure.",
     temporaryFailureResponse: "Temporary failure."
   })
 
@@ -143,6 +146,7 @@ test("answer orchestrator returns temporary fallback when llm generation fails",
     buildUserPrompt: () => "unused",
     toCitation,
     noEvidenceResponse: "No evidence found.",
+    retrievalFailureResponse: "Retrieval failure.",
     temporaryFailureResponse: "Temporary failure."
   })
 
@@ -153,7 +157,7 @@ test("answer orchestrator returns temporary fallback when llm generation fails",
   expect(result.retrievalMeta).toEqual({ candidateCount: 1, selectedCount: 1 })
 })
 
-test("answer orchestrator degrades to no-evidence fallback when retrieval fails", async () => {
+test("answer orchestrator returns retrieval fallback when retrieval fails", async () => {
   let llmCalled = false
   let count = 0
   const answerQuestion = createAnswerQuestion({
@@ -176,13 +180,14 @@ test("answer orchestrator degrades to no-evidence fallback when retrieval fails"
     buildUserPrompt: () => "unused",
     toCitation,
     noEvidenceResponse: "No evidence found.",
+    retrievalFailureResponse: "Retrieval failure.",
     temporaryFailureResponse: "Temporary failure."
   })
 
   const result = await answerQuestion("thr_4", "Question")
 
   expect(llmCalled).toBe(false)
-  expect(result.answer).toBe("No evidence found.")
+  expect(result.answer).toBe("Retrieval failure.")
   expect(result.citations).toEqual([])
   expect(result.retrievalMeta).toEqual({ candidateCount: 0, selectedCount: 0 })
 })
