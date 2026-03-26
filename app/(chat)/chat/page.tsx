@@ -3,7 +3,7 @@ import { ChatShell } from "@/components/chat/chat-shell"
 
 export default function ChatPage() {
   return (
-    <main className="container" style={{ display: "grid", gap: 12 }}>
+    <main className="container chat-page">
       <div>
         <SecondaryButtonLink href="/">Back</SecondaryButtonLink>
       </div>

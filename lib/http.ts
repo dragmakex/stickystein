@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { AppError, PaymentRequiredError, ValidationError } from "@/lib/errors"
+import { AppError, ValidationError } from "@/lib/errors"
 import { makeId } from "@/lib/ids"
 import { securityHeaders } from "@/lib/security/headers"
 
@@ -26,12 +26,6 @@ export const errorResponse = (error: unknown, requestId?: string): NextResponse 
   }
 
   const response = NextResponse.json(body, { status })
-  if (appError instanceof PaymentRequiredError) {
-    response.headers.set("PAYMENT-REQUIRED", appError.paymentRequiredHeader)
-    if (appError.paymentResponseHeader) {
-      response.headers.set("PAYMENT-RESPONSE", appError.paymentResponseHeader)
-    }
-  }
   if (requestId) response.headers.set("x-request-id", requestId)
   for (const [key, value] of Object.entries(securityHeaders)) {
     response.headers.set(key, value)

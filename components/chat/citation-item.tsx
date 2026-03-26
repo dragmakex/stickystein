@@ -19,14 +19,14 @@ export function CitationItem({ citation }: { citation: CitationView }) {
   const snippet = expanded ? citation.snippet : preview
 
   return (
-    <li className="window" style={{ marginBottom: 8, padding: 8, background: "#ece9d8" }}>
-      <strong>{citation.filename}</strong> (page {citation.pageNumber ?? "n/a"})
-      <div style={{ fontSize: 12, color: "#334155", marginTop: 6, whiteSpace: "pre-wrap" }}>{snippet}</div>
+    <li className="window citation-card">
+      <strong className="citation-filename">{citation.filename}</strong> (page {citation.pageNumber ?? "n/a"})
+      <div className="citation-snippet">{snippet}</div>
       {truncated ? (
         <SecondaryButton
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          style={{ marginTop: 8, minHeight: 26, padding: "4px 8px", fontSize: 12 }}
+          className="citation-toggle"
           aria-expanded={expanded}
         >
           {expanded ? "Collapse snippet" : "Expand snippet"}

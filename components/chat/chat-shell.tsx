@@ -165,27 +165,27 @@ export function ChatShell() {
   return (
     <section className="window" aria-labelledby="chat-panel-title">
       <h2 className="window-title">Chat</h2>
-      <div style={{ padding: 12 }}>
-      <h3 id="chat-panel-title" className="sr-only">Chat conversation panel</h3>
-      <SensitiveCorpusDisclaimer />
-      {error ? <p style={{ color: "#b91c1c" }} role="alert" aria-live="assertive">{error}</p> : null}
-      <MessageList messages={messages} />
-      {pending ? (
-        <div className="window chat-loading" role="status" aria-live="polite">
-          <div>
-            <div className="chat-loading-title">
-              {loadingNote}
-              <span className="chat-loading-dots" aria-hidden="true" data-step={loadingTick} />
+      <div className="chat-shell-body">
+        <h3 id="chat-panel-title" className="sr-only">Chat conversation panel</h3>
+        <SensitiveCorpusDisclaimer />
+        {error ? <p className="chat-error" role="alert" aria-live="assertive">{error}</p> : null}
+        <MessageList messages={messages} />
+        {pending ? (
+          <div className="window chat-loading" role="status" aria-live="polite">
+            <div className="chat-loading-copy">
+              <div className="chat-loading-title">
+                {loadingNote}
+                <span className="chat-loading-dots" aria-hidden="true" data-step={loadingTick} />
+              </div>
+            </div>
+            <div className="win-spinner" aria-hidden="true">
+              <span />
+              <span />
+              <span />
             </div>
           </div>
-          <div className="win-spinner" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-      ) : null}
-      <MessageInput onSend={onSend} disabled={pending || !threadId} />
+        ) : null}
+        <MessageInput onSend={onSend} disabled={pending || !threadId} />
       </div>
     </section>
   )

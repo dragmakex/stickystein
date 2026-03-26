@@ -23,7 +23,7 @@ export function MessageInput({
         setQuestion("")
         await onSend(value)
       }}
-      style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}
+      className="chat-input-form"
       aria-label="Ask a question about indexed documents"
     >
       <label htmlFor={inputId} className="sr-only">
@@ -35,10 +35,9 @@ export function MessageInput({
         onChange={(event) => setQuestion(event.target.value)}
         placeholder="Ask about the indexed PDFs"
         disabled={disabled}
-        className="input98"
-        style={{ flex: 1, minWidth: 220 }}
+        className="input98 chat-input-field"
       />
-      <PrimaryButton disabled={disabled} type="submit">
+      <PrimaryButton disabled={disabled} type="submit" className="chat-input-submit">
         Send
       </PrimaryButton>
     </form>

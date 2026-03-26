@@ -1,7 +1,6 @@
 export type AppErrorCode =
   | "internal"
   | "validation_error"
-  | "payment_required"
   | "unauthorized"
   | "forbidden"
   | "not_found"
@@ -28,19 +27,6 @@ export class InternalError extends AppError {
 export class ValidationError extends AppError {
   readonly code = "validation_error" as const
   readonly status = 400
-}
-
-export class PaymentRequiredError extends AppError {
-  readonly code = "payment_required" as const
-  readonly status = 402
-
-  constructor(
-    message: string,
-    readonly paymentRequiredHeader: string,
-    readonly paymentResponseHeader?: string
-  ) {
-    super(message)
-  }
 }
 
 export class UnauthorizedError extends AppError {

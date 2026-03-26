@@ -136,26 +136,3 @@ test("parseEnvironment validates overlap and chunk size relationship", () => {
     )
   ).toThrow("RAG_CHUNK_OVERLAP must be less than RAG_CHUNK_SIZE")
 })
-
-test("parseEnvironment validates x402 boolean format", () => {
-  expect(() =>
-    parseEnvironment(
-      makeEnv({
-        X402_ENABLED: "yes"
-      }),
-      "fallback-secret-32-characters--okok"
-    )
-  ).toThrow("X402_ENABLED must be true or false")
-})
-
-test("parseEnvironment requires payTo wallet when x402 is enabled", () => {
-  expect(() =>
-    parseEnvironment(
-      makeEnv({
-        X402_ENABLED: "true",
-        X402_PAY_TO: ""
-      }),
-      "fallback-secret-32-characters--okok"
-    )
-  ).toThrow("X402_PAY_TO is required when X402_ENABLED=true")
-})

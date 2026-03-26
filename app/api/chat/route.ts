@@ -4,7 +4,6 @@ import { errorResponse, ok, parseJsonBody, requestIdFromRequest } from "@/lib/ht
 import { clientIpFromRequest } from "@/lib/security/request"
 import { decodeChatRequest } from "@/lib/validation/chat"
 import { getOrCreateSession } from "@/server/chat/sessions"
-import { paymentResponseHeaderName, requireX402Payment } from "@/server/payments/x402"
 import { assertThreadOwnership } from "@/server/chat/threads"
 import { answerQuestion } from "@/server/rag/answer-orchestrator"
 import { enforceRateLimit } from "@/server/rate-limit/limiter"
@@ -16,7 +15,6 @@ export type ChatPostDependencies = {
   readonly parseJsonBody: typeof parseJsonBody
   readonly decodeChatRequest: typeof decodeChatRequest
   readonly getOrCreateSession: typeof getOrCreateSession
-  readonly requireX402Payment: typeof requireX402Payment
   readonly assertThreadOwnership: typeof assertThreadOwnership
   readonly clientIpFromRequest: typeof clientIpFromRequest
   readonly enforceRateLimit: typeof enforceRateLimit
@@ -30,7 +28,6 @@ const liveDependencies: ChatPostDependencies = {
   parseJsonBody,
   decodeChatRequest,
   getOrCreateSession,
-  requireX402Payment,
   assertThreadOwnership,
   clientIpFromRequest,
   enforceRateLimit,
@@ -40,11 +37,6 @@ const liveDependencies: ChatPostDependencies = {
 }
 
 const handleChatPost = Effect.fn("ChatRoute.POST")(function* (request: Request, requestId: string, deps: ChatPostDependencies) {
-  const pendingPayment = yield* Effect.tryPromise({
-    try: () => deps.requireX402Payment(request),
-    catch: toAppError
-  })
-
   const rawBody = yield* Effect.tryPromise({
     try: () => deps.parseJsonBody(request, { maxBytes: 16 * 1024 }),
     catch: toAppError
@@ -78,15 +70,7 @@ const handleChatPost = Effect.fn("ChatRoute.POST")(function* (request: Request, 
     catch: toAppError
   })
 
-  const response = deps.ok({ threadId: body.threadId, ...answer }, requestId)
-  if (pendingPayment) {
-    const settledPayment = yield* Effect.tryPromise({
-      try: () => pendingPayment.settle(),
-      catch: toAppError
-    })
-    response.headers.set(paymentResponseHeaderName, settledPayment.paymentResponseHeader)
-  }
-  return response
+  return deps.ok({ threadId: body.threadId, ...answer }, requestId)
 })
 
 export const createChatPostHandler =

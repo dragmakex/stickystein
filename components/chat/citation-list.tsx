@@ -4,7 +4,7 @@ export function CitationList({ citations }: { citations?: ReadonlyArray<Citation
   if (!citations || citations.length === 0) return null
 
   return (
-    <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+    <ul className="citation-list">
       {citations.map((citation) => (
         <CitationItem key={citation.chunkId} citation={citation} />
       ))}

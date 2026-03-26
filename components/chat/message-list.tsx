@@ -12,10 +12,10 @@ type Message = {
 
 export function MessageList({ messages }: { messages: ReadonlyArray<Message> }) {
   return (
-    <div style={{ display: "grid", gap: 10 }}>
+    <div className="chat-message-list">
       {messages.map((message) => (
-        <article key={message.id} className="window" style={{ padding: 12, background: "#f3f0ed" }}>
-          <div style={{ fontSize: 12, color: "#334155", marginBottom: 6, textTransform: "uppercase" }}>{message.role}</div>
+        <article key={message.id} className="window chat-message-card">
+          <div className="chat-message-role">{message.role}</div>
           {message.pending ? (
             <div className="chat-loading-inline" role="status" aria-live="polite">
               <div className="chat-loading-title">Consulting the files...</div>

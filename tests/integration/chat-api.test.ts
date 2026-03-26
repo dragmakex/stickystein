@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 
-import { ForbiddenError, PaymentRequiredError, RateLimitError, ValidationError } from "@/lib/errors"
+import { ForbiddenError, RateLimitError, ValidationError } from "@/lib/errors"
 import { errorResponse, ok } from "@/lib/http"
 import { createChatPostHandler, type ChatPostDependencies } from "@/app/api/chat/route"
 
@@ -9,7 +9,6 @@ const makeDeps = (overrides: Partial<ChatPostDependencies> = {}): ChatPostDepend
   parseJsonBody: async () => ({ threadId: "thread_1", question: "What happened?" }),
   decodeChatRequest: (input) => input as { threadId: string; question: string },
   getOrCreateSession: async () => ({ sessionKey: "session_key_1", sessionId: "session_1" }),
-  requireX402Payment: async () => null,
   assertThreadOwnership: async () => {},
   clientIpFromRequest: () => "203.0.113.10",
   enforceRateLimit: async () => {},
@@ -123,49 +122,4 @@ test("chat api rate limits abusive clients", async () => {
   expect(await response.json()).toEqual({
     error: { code: "rate_limited", message: "Too many requests" }
   })
-})
-
-test("chat api returns 402 with PAYMENT-REQUIRED challenge when payment is missing", async () => {
-  const handler = createChatPostHandler(
-    makeDeps({
-      requireX402Payment: async () => {
-        throw new PaymentRequiredError("Payment required", "challenge_b64")
-      }
-    })
-  )
-
-  const response = await handler(
-    new Request("http://localhost/api/chat", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ threadId: "thread_3", question: "Please answer quickly." })
-    })
-  )
-
-  expect(response.status).toBe(402)
-  expect(response.headers.get("PAYMENT-REQUIRED")).toBe("challenge_b64")
-  expect(await response.json()).toEqual({
-    error: { code: "payment_required", message: "Payment required" }
-  })
-})
-
-test("chat api sets PAYMENT-RESPONSE header after successful settlement", async () => {
-  const handler = createChatPostHandler(
-    makeDeps({
-      requireX402Payment: async () => ({
-        settle: async () => ({ paymentResponseHeader: "settlement_b64" })
-      })
-    })
-  )
-
-  const response = await handler(
-    new Request("http://localhost/api/chat", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ threadId: "thread_3", question: "Please answer quickly." })
-    })
-  )
-
-  expect(response.status).toBe(200)
-  expect(response.headers.get("PAYMENT-RESPONSE")).toBe("settlement_b64")
 })
