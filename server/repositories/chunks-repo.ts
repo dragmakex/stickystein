@@ -97,10 +97,24 @@ export const vectorSearch = async (embedding: ReadonlyArray<number>, limit: numb
   `)
 }
 
-export const persistEmbeddings = async (rows: ReadonlyArray<{ chunkId: string; embedding: ReadonlyArray<number> }>): Promise<void> => {
+export const persistEmbeddings = async (rows: ReadonlyArray<{
+  chunkId: string
+  embedding: ReadonlyArray<number>
+  metadata?: Record<string, unknown>
+}>): Promise<void> => {
   await withDb(async (sql) => {
     for (const row of rows) {
       const vector = `[${row.embedding.join(",")}]`
+      if (row.metadata) {
+        await sql`
+          UPDATE document_chunks
+          SET embedding = ${vector}::vector,
+              metadata = COALESCE(metadata, '{}'::jsonb) || ${sql.json(row.metadata as never)}::jsonb
+          WHERE id = ${row.chunkId}
+        `
+        continue
+      }
+
       await sql`UPDATE document_chunks SET embedding = ${vector}::vector WHERE id = ${row.chunkId}`
     }
   })

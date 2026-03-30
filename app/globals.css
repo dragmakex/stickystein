@@ -497,8 +497,10 @@ a:focus-visible {
 
 .citation-card {
   margin-bottom: 8px;
-  padding: 8px;
+  padding: 6px 8px;
   background: #ece9d8;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .citation-filename,
@@ -506,18 +508,23 @@ a:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.citation-snippet {
-  margin-top: 6px;
+.citation-filename {
   font-size: 12px;
+  font-weight: 700;
+}
+
+.citation-snippet {
+  margin-top: 4px;
+  font-size: 11px;
   color: #334155;
   white-space: pre-wrap;
 }
 
 .citation-toggle {
-  margin-top: 8px;
-  min-height: 26px;
-  padding: 4px 8px;
-  font-size: 12px;
+  margin-top: 6px;
+  min-height: 24px;
+  padding: 3px 7px;
+  font-size: 11px;
 }
 
 @media (max-width: 900px) {

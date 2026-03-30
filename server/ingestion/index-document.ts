@@ -64,6 +64,24 @@ const defaultDeps: IndexDocumentDeps = {
   deactivateOtherReadyVersions
 }
 
+const isZeroVector = (vector: ReadonlyArray<number> | undefined): boolean =>
+  Array.isArray(vector) && vector.length > 0 && vector.every((value) => value === 0)
+
+const previewChunkText = (text: string, maxLength = 200): string => {
+  const normalized = text.replace(/\s+/g, " ").trim()
+  if (normalized.length <= maxLength) return normalized
+  return `${normalized.slice(0, maxLength)}...`
+}
+
+const zeroVectorMetadata = (doc: InputDocument, chunk: { pageNumber: number | null; chunkIndex: number; text: string }) => ({
+  embeddingFallback: "zero-vector",
+  embeddingFallbackAt: new Date().toISOString(),
+  embeddingFallbackFilename: doc.filename,
+  embeddingFallbackPageNumber: chunk.pageNumber,
+  embeddingFallbackChunkIndex: chunk.chunkIndex,
+  embeddingFallbackPreview: previewChunkText(chunk.text)
+})
+
 export const indexDocument = async (doc: InputDocument, deps: IndexDocumentDeps = defaultDeps): Promise<void> => {
   const contentHash = await deps.hashDocument(doc)
   const existing = await deps.getDocumentBySourceAndHash(doc.filename, contentHash)
@@ -111,7 +129,24 @@ export const indexDocument = async (doc: InputDocument, deps: IndexDocumentDeps 
     if (chunks.length > 0) {
       const embedder = deps.embeddingProvider()
       const vectors = await embedder.embedTexts(chunks.map((chunk) => chunk.text))
-      await deps.persistEmbeddings(chunks.map((chunk, index) => ({ chunkId: chunk.id, embedding: vectors[index] })))
+      for (const [index, chunk] of chunks.entries()) {
+        const vector = vectors[index]
+        if (isZeroVector(vector)) {
+          console.warn("Embedding fallback to zero vector", {
+            filename: doc.filename,
+            pageNumber: chunk.pageNumber,
+            chunkIndex: chunk.chunkIndex,
+            preview: previewChunkText(chunk.text)
+          })
+        }
+      }
+      await deps.persistEmbeddings(
+        chunks.map((chunk, index) => ({
+          chunkId: chunk.id,
+          embedding: vectors[index],
+          metadata: isZeroVector(vectors[index]) ? zeroVectorMetadata(doc, chunk) : undefined
+        }))
+      )
     }
 
     await deps.markDocumentStatus(stored.id, "ready", { pageCount: parsed.pageCount, lastIndexedAt: new Date() })
