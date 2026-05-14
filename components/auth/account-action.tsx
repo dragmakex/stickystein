@@ -7,7 +7,7 @@ import { QueryPackButton } from "@/components/billing/query-pack-button"
 import { PrimaryButton, SecondaryButton } from "@/components/ui/button"
 import { authClient } from "@/lib/auth"
 
-export function AccountAction() {
+export function AccountAction({ className = "" }: { className?: string } = {}) {
   const { data: authSession, isPending } = authClient.useSession()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -15,7 +15,7 @@ export function AccountAction() {
   const signedIn = Boolean(authSession?.user)
 
   return (
-    <div className="account-action">
+    <div className={`account-action ${className}`.trim()}>
       {isPending ? (
         <SecondaryButton disabled type="button">
           Checking...

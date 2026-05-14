@@ -121,6 +121,12 @@ a:focus-visible {
   gap: 18px;
 }
 
+.landing-actions {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
 .account-action {
   position: fixed;
   top: 16px;
@@ -129,6 +135,13 @@ a:focus-visible {
   display: grid;
   justify-items: end;
   gap: 8px;
+}
+
+.account-action-inline {
+  position: relative;
+  top: auto;
+  right: auto;
+  justify-items: center;
 }
 
 .account-action-signed-in {

@@ -6,7 +6,6 @@ import { SecondaryButtonLink } from "@/components/ui/button"
 export default function HomePage() {
   return (
     <main className="container landing-shell">
-      <AccountAction />
       <section className="window landing-card">
         <div className="window-title landing-titlebar">
           <span className="landing-titlebar-label">STICKYSTEIN.EXE</span>
@@ -31,7 +30,10 @@ export default function HomePage() {
         <div className="landing-copy">
           <h2 className="landing-heading">Stickystein</h2>
           <p className="landing-description">Ask questions over the Epstein PDFs.</p>
-          <SecondaryButtonLink href="/chat">Open chat</SecondaryButtonLink>
+          <div className="landing-actions">
+            <SecondaryButtonLink href="/chat">Open chat</SecondaryButtonLink>
+            <AccountAction className="account-action-inline" />
+          </div>
         </div>
       </section>
       <CorpusListPanel />
