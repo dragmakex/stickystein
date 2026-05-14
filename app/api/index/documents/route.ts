@@ -31,11 +31,15 @@ const parsePositiveInt = (value: string | null, fallback: number): number => {
 const handleIndexDocumentsGet = Effect.fn("IndexDocumentsRoute.GET")(function* (
   requestId: string,
   deps: IndexDocumentsGetDependencies,
-  pagination: { readonly page: number; readonly pageSize: number }
+  pagination: { readonly page: number; readonly pageSize: number; readonly includeTotal: boolean }
 ) {
   const offset = (pagination.page - 1) * pagination.pageSize
   const [rows, totalCount] = yield* Effect.tryPromise({
-    try: () => Promise.all([deps.listDocumentsWithLatestJob({ limit: pagination.pageSize, offset }), deps.countDocuments()]),
+    try: () =>
+      Promise.all([
+        deps.listDocumentsWithLatestJob({ limit: pagination.pageSize, offset }),
+        pagination.includeTotal ? deps.countDocuments() : Promise.resolve(null)
+      ]),
     catch: toAppError
   })
 
@@ -61,7 +65,7 @@ const handleIndexDocumentsGet = Effect.fn("IndexDocumentsRoute.GET")(function* (
         page: pagination.page,
         pageSize: pagination.pageSize,
         totalCount,
-        totalPages: Math.max(1, Math.ceil(totalCount / pagination.pageSize))
+        totalPages: totalCount === null ? null : Math.max(1, Math.ceil(totalCount / pagination.pageSize))
       }
     },
     requestId
@@ -75,8 +79,9 @@ export const createIndexDocumentsGetHandler =
     const url = new URL(request.url)
     const page = parsePositiveInt(url.searchParams.get("page"), 1)
     const pageSize = Math.min(parsePositiveInt(url.searchParams.get("pageSize"), DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE)
+    const includeTotal = url.searchParams.get("includeTotal") !== "false"
     return Effect.runPromise(
-      handleIndexDocumentsGet(requestId, deps, { page, pageSize }).pipe(
+      handleIndexDocumentsGet(requestId, deps, { page, pageSize, includeTotal }).pipe(
         Effect.catchAll((error) => Effect.succeed(deps.errorResponse(error, requestId))),
         Effect.catchAllDefect((defect) => Effect.succeed(deps.errorResponse(defect, requestId)))
       )

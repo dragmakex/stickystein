@@ -113,11 +113,53 @@ a:focus-visible {
 }
 
 .landing-shell {
+  position: relative;
   min-height: 100vh;
   display: grid;
   align-content: center;
   justify-items: center;
   gap: 18px;
+}
+
+.account-action {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.account-action-signed-in {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: var(--surface);
+  border-top: 2px solid var(--border-light);
+  border-left: 2px solid var(--border-light);
+  border-right: 2px solid var(--border-deep);
+  border-bottom: 2px solid var(--border-deep);
+  box-shadow: 2px 2px 0 #00000040;
+}
+
+.account-action-user {
+  max-width: 220px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-action-error {
+  max-width: 280px;
+  padding: 6px;
+  background: var(--surface);
+}
+
+.account-action-popover {
+  width: min(360px, calc(100vw - 32px));
 }
 
 .landing-card {

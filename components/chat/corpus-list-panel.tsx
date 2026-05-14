@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { SecondaryButton } from "@/components/ui/button"
 
@@ -13,8 +13,8 @@ type DocumentRow = {
 type DocumentsResponse = {
   documents?: ReadonlyArray<DocumentRow>
   pagination?: {
-    totalCount?: number
-    totalPages?: number
+    totalCount?: number | null
+    totalPages?: number | null
   }
 }
 
@@ -23,10 +23,11 @@ const PAGE_SIZE = 25
 export function CorpusListPanel() {
   const [documents, setDocuments] = useState<ReadonlyArray<DocumentRow>>([])
   const [page, setPage] = useState(1)
-  const [totalCount, setTotalCount] = useState(0)
-  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
+  const [totalPages, setTotalPages] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const loadedTotalRef = useRef(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -35,15 +36,25 @@ export function CorpusListPanel() {
 
     void (async () => {
       try {
-        const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) })
+        const shouldIncludeTotal = !loadedTotalRef.current
+        const params = new URLSearchParams({
+          page: String(page),
+          pageSize: String(PAGE_SIZE),
+          includeTotal: shouldIncludeTotal ? "true" : "false"
+        })
         const response = await fetch(`/api/index/documents?${params.toString()}`, { cache: "no-store", signal: controller.signal })
         const body = (await response.json()) as DocumentsResponse & { error?: { message?: string } }
         if (!response.ok) {
           throw new Error(body?.error?.message ?? "Could not load indexed PDFs")
         }
         setDocuments(body.documents ?? [])
-        setTotalCount(body.pagination?.totalCount ?? 0)
-        setTotalPages(body.pagination?.totalPages ?? 1)
+        if (typeof body.pagination?.totalCount === "number") {
+          loadedTotalRef.current = true
+          setTotalCount(body.pagination.totalCount)
+        }
+        if (typeof body.pagination?.totalPages === "number") {
+          setTotalPages(body.pagination.totalPages)
+        }
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return
         setError(err instanceof Error ? err.message : "Could not load indexed PDFs")
@@ -62,8 +73,8 @@ export function CorpusListPanel() {
       <div className="window-title">Indexed PDFs</div>
       <div className="corpus-panel">
         <div className="corpus-panel-header">
-          <p className="corpus-meta">{loading ? "Loading..." : `${totalCount} indexed PDFs`}</p>
-          <p className="corpus-meta">Page {page} of {totalPages}</p>
+          <p className="corpus-meta">{totalCount === null ? "Loading..." : `${totalCount} indexed PDFs`}</p>
+          <p className="corpus-meta">Page {page} of {totalPages ?? "..."}</p>
         </div>
         {error ? <p style={{ color: "#b91c1c", margin: 0 }}>{error}</p> : null}
         <div className="table-scroll">
@@ -93,7 +104,7 @@ export function CorpusListPanel() {
           <SecondaryButton onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1}>
             Previous
           </SecondaryButton>
-          <SecondaryButton onClick={() => setPage((current) => Math.min(totalPages, current + 1))} disabled={page >= totalPages}>
+          <SecondaryButton onClick={() => setPage((current) => Math.min(totalPages ?? current + 1, current + 1))} disabled={totalPages !== null && page >= totalPages}>
             Next
           </SecondaryButton>
         </div>
