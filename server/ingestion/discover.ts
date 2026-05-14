@@ -8,6 +8,15 @@ export type DiscoveredPdf = {
   readonly mtimeMs: number
 }
 
+const VOL_PATH_SEGMENT = /(^|[\\/])(VOL\d+)([\\/].*)$/i
+
+export const normalizeDiscoveredPdfFilename = (relativePath: string): string => {
+  const match = relativePath.match(VOL_PATH_SEGMENT)
+  if (!match) return relativePath
+
+  return `${match[2]}${match[3]}`.replaceAll("\\", "/")
+}
+
 const walk = async (rootDir: string, currentDir: string, out: DiscoveredPdf[]): Promise<void> => {
   const names = await readdir(currentDir)
 
@@ -23,7 +32,12 @@ const walk = async (rootDir: string, currentDir: string, out: DiscoveredPdf[]): 
     if (!name.toLowerCase().endsWith(".pdf")) continue
 
     const relativePath = path.relative(rootDir, fullPath)
-    out.push({ path: fullPath, filename: relativePath, size: fileStat.size, mtimeMs: fileStat.mtimeMs })
+    out.push({
+      path: fullPath,
+      filename: normalizeDiscoveredPdfFilename(relativePath),
+      size: fileStat.size,
+      mtimeMs: fileStat.mtimeMs
+    })
   }
 }
 
