@@ -175,6 +175,44 @@ a:focus-visible {
   width: min(360px, calc(100vw - 32px));
 }
 
+.secret-bypass-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.secret-bypass-dialog {
+  width: min(420px, 100%);
+}
+
+.secret-bypass-body {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.secret-bypass-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.secret-bypass-dialog .landing-titlebar-button {
+  padding: 0;
+  line-height: 1;
+}
+
+.secret-bypass-dialog .landing-titlebar-icon-close::before,
+.secret-bypass-dialog .landing-titlebar-icon-close::after {
+  top: 0;
+  left: 4px;
+}
+
 .landing-card {
   width: min(100%, 720px);
 }

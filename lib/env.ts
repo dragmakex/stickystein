@@ -19,6 +19,7 @@ const EnvSchema = Schema.Struct({
   EMBEDDING_TIMEOUT_MS: Schema.optional(Schema.String),
   EMBEDDING_BATCH_SIZE: Schema.optional(Schema.String),
   ADMIN_INGEST_TOKEN: Schema.optional(Schema.String),
+  CHAT_BYPASS_SECRET: Schema.optional(Schema.String),
   STRIPE_SECRET_KEY: Schema.optional(Schema.String),
   STRIPE_WEBHOOK_SECRET: Schema.optional(Schema.String),
   STRIPE_PRICE_CENTS: Schema.optional(Schema.String),
@@ -130,6 +131,7 @@ export const parseEnvironment = (processEnv: NodeJS.ProcessEnv) => {
       retryMaxMs: parseInteger("JOB_RETRY_MAX_MS", processEnv.JOB_RETRY_MAX_MS, 60000)
     },
     adminIngestToken: parsedRaw.ADMIN_INGEST_TOKEN ?? "",
+    chatBypassSecret: parsedRaw.CHAT_BYPASS_SECRET ?? "",
     stripe: {
       secretKey: parsedRaw.STRIPE_SECRET_KEY ?? "",
       webhookSecret: parsedRaw.STRIPE_WEBHOOK_SECRET ?? "",

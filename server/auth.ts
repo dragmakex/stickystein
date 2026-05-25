@@ -5,8 +5,10 @@ import { magicLink } from "better-auth/plugins"
 import { Pool } from "pg"
 import { Resend } from "resend"
 
+import { withDb } from "@/db/client"
 import { env } from "@/lib/env"
 import { UnauthorizedError, ValidationError } from "@/lib/errors"
+import { BYPASS_USER_ID, hasBypassAccess } from "@/lib/security/bypass"
 
 let authPool: Pool | null = null
 let resendClient: Resend | null = null
@@ -94,10 +96,27 @@ export const auth = betterAuth({
 
 export const getAuthSession = async () => auth.api.getSession({ headers: await headers() })
 
+const ensureBypassUser = async () => {
+  await withDb(async (sql) => {
+    await sql`
+      INSERT INTO users (id, name, email, "emailVerified", query_credits)
+      VALUES (${BYPASS_USER_ID}, 'Secret Access', 'bypass@stickystein.local', true, 0)
+      ON CONFLICT (id) DO NOTHING
+    `
+  })
+
+  return {
+    id: BYPASS_USER_ID,
+    name: "Secret Access",
+    email: "bypass@stickystein.local",
+    emailVerified: true,
+    image: null
+  }
+}
+
 export const requireCurrentUser = async () => {
   const session = await getAuthSession()
-  if (!session?.user) {
-    throw new UnauthorizedError("Sign in required")
-  }
-  return session.user
+  if (session?.user) return session.user
+  if (await hasBypassAccess()) return ensureBypassUser()
+  throw new UnauthorizedError("Sign in required")
 }

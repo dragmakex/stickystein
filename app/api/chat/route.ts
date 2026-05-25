@@ -1,6 +1,7 @@
 import { env } from "@/lib/env"
 import { PaymentRequiredError, toAppError } from "@/lib/errors"
 import { errorResponse, ok, parseJsonBody, requestIdFromRequest } from "@/lib/http"
+import { BYPASS_USER_ID } from "@/lib/security/bypass"
 import { clientIpFromRequest } from "@/lib/security/request"
 import { decodeChatRequest } from "@/lib/validation/chat"
 import { requireCurrentUser } from "@/server/auth"
@@ -57,12 +58,14 @@ const handleChatPost = Effect.fn("ChatRoute.POST")(function* (request: Request, 
     catch: toAppError
   })
 
-  const remainingCredits = yield* Effect.tryPromise({
-    try: () => deps.consumeQueryCredit(user.id),
-    catch: toAppError
-  })
-  if (remainingCredits === null) {
-    return yield* Effect.fail(new PaymentRequiredError("No queries remaining. Buy a $1 pack for 5 more queries."))
+  if (user.id !== BYPASS_USER_ID) {
+    const remainingCredits = yield* Effect.tryPromise({
+      try: () => deps.consumeQueryCredit(user.id),
+      catch: toAppError
+    })
+    if (remainingCredits === null) {
+      return yield* Effect.fail(new PaymentRequiredError("No queries remaining. Buy a $1 pack for 5 more queries."))
+    }
   }
 
   yield* Effect.tryPromise({

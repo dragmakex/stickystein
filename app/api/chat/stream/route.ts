@@ -2,6 +2,7 @@ import { env } from "@/lib/env"
 import { PaymentRequiredError, toAppError } from "@/lib/errors"
 import { parseJsonBody, requestIdFromRequest } from "@/lib/http"
 import { securityHeaders } from "@/lib/security/headers"
+import { BYPASS_USER_ID } from "@/lib/security/bypass"
 import { clientIpFromRequest } from "@/lib/security/request"
 import { decodeChatRequest } from "@/lib/validation/chat"
 import { requireCurrentUser } from "@/server/auth"
@@ -37,9 +38,11 @@ export const POST = async (request: Request) => {
       max: env.rateLimit.chatMax
     })
 
-    const remainingCredits = await consumeQueryCredit(user.id)
-    if (remainingCredits === null) {
-      throw new PaymentRequiredError("No queries remaining. Buy a $1 pack for 5 more queries.")
+    if (user.id !== BYPASS_USER_ID) {
+      const remainingCredits = await consumeQueryCredit(user.id)
+      if (remainingCredits === null) {
+        throw new PaymentRequiredError("No queries remaining. Buy a $1 pack for 5 more queries.")
+      }
     }
 
     const userMessage = await insertMessage({ threadId: body.threadId, role: "user", content: body.question })

@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { AccountAction } from "@/components/auth/account-action"
+import { ChatAccessActions } from "@/components/auth/chat-access-actions"
+import { SecretBypassButton } from "@/components/auth/secret-bypass-button"
 import { CorpusListPanel } from "@/components/chat/corpus-list-panel"
-import { SecondaryButtonLink } from "@/components/ui/button"
 
 export default function HomePage() {
   return (
@@ -10,9 +10,7 @@ export default function HomePage() {
         <div className="window-title landing-titlebar">
           <span className="landing-titlebar-label">STICKYSTEIN.EXE</span>
           <span className="landing-titlebar-controls">
-            <span className="landing-titlebar-button" aria-hidden="true">
-              <span className="landing-titlebar-icon landing-titlebar-icon-minimize" />
-            </span>
+            <SecretBypassButton />
             <span className="landing-titlebar-button" aria-hidden="true">
               <span className="landing-titlebar-icon landing-titlebar-icon-maximize" />
             </span>
@@ -30,10 +28,7 @@ export default function HomePage() {
         <div className="landing-copy">
           <h2 className="landing-heading">Stickystein</h2>
           <p className="landing-description">Ask questions over the Epstein PDFs.</p>
-          <div className="landing-actions">
-            <SecondaryButtonLink href="/chat">Open chat</SecondaryButtonLink>
-            <AccountAction className="account-action-inline" />
-          </div>
+          <ChatAccessActions />
         </div>
       </section>
       <CorpusListPanel />
