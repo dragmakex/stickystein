@@ -28,12 +28,15 @@ test("discoverLocalPdfs scans nested directories", async () => {
   expect(discovered.map((item) => item.filename)).toEqual(["a.pdf", path.join("nested", "b.PDF")])
 })
 
-test("normalizeDiscoveredPdfFilename prefers the VOL-prefixed suffix when present", () => {
+test("normalizeDiscoveredPdfFilename uses VOL-prefixed names", () => {
   expect(normalizeDiscoveredPdfFilename(path.join("DataSet 2", "VOL00002", "IMAGES", "0001", "EFTA00003159.pdf"))).toBe(
     "VOL00002/IMAGES/0001/EFTA00003159.pdf"
   )
   expect(normalizeDiscoveredPdfFilename("VOL00011/IMAGES/0332/EFTA02730262.pdf")).toBe(
     "VOL00011/IMAGES/0332/EFTA02730262.pdf"
+  )
+  expect(normalizeDiscoveredPdfFilename(path.join("DataSet 10", "DataSet 10", "page-01493", "EFTA01450780.pdf"))).toBe(
+    "VOL00010/page-01493/EFTA01450780.pdf"
   )
   expect(normalizeDiscoveredPdfFilename("nested/file.pdf")).toBe("nested/file.pdf")
 })

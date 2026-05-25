@@ -8,13 +8,23 @@ export type DiscoveredPdf = {
   readonly mtimeMs: number
 }
 
-const VOL_PATH_SEGMENT = /(^|[\\/])(VOL\d+)([\\/].*)$/i
+const datasetNameToVolume = (name: string): string | null => {
+  const match = /^DataSet\s+(\d+)$/i.exec(name)
+  if (!match) return null
+  return `VOL${match[1].padStart(5, "0")}`
+}
 
 export const normalizeDiscoveredPdfFilename = (relativePath: string): string => {
-  const match = relativePath.match(VOL_PATH_SEGMENT)
-  if (!match) return relativePath
+  const parts = relativePath.replaceAll("\\", "/").split("/")
+  const volumeIndex = parts.findIndex((part) => /^VOL\d+$/i.test(part))
+  if (volumeIndex >= 0) return parts.slice(volumeIndex).join("/")
 
-  return `${match[2]}${match[3]}`.replaceAll("\\", "/")
+  const datasetIndex = parts.findIndex((part) => datasetNameToVolume(part) !== null)
+  if (datasetIndex < 0) return parts.join("/")
+
+  const volumeName = datasetNameToVolume(parts[datasetIndex])
+  const rest = parts.slice(datasetIndex + 1).filter((part) => !/^DataSet\s+\d+$/i.test(part))
+  return [volumeName, ...rest].join("/")
 }
 
 const walk = async (rootDir: string, currentDir: string, out: DiscoveredPdf[]): Promise<void> => {
