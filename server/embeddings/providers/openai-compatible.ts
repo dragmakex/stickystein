@@ -15,6 +15,13 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const isTransientStatus = (status: number): boolean => status === 429 || status >= 500
 
+const buildEmbeddingsUrl = (baseUrl: string): string => `${baseUrl.replace(/\/+$/, "")}/embeddings`
+
+const buildHeaders = (): HeadersInit => ({
+  ...(env.embeddings.apiKey ? { Authorization: `Bearer ${env.embeddings.apiKey}` } : {}),
+  "Content-Type": "application/json"
+})
+
 const chunkArray = <T>(items: ReadonlyArray<T>, size: number): T[][] => {
   const chunks: T[][] = []
   for (let index = 0; index < items.length; index += size) {
@@ -42,16 +49,29 @@ const isProviderNanFailure = (error: unknown): boolean => {
   return status === 500 && typeof body === "string" && body.includes("unsupported value: NaN")
 }
 
+const isUnsupportedDimensionsFailure = (status: number, body: string): boolean =>
+  status === 400 && /dimension/i.test(body)
+
 const assertVectors = (vectors: ReadonlyArray<ReadonlyArray<number>>): void => {
+  if (vectors.length === 0) {
+    throw new ExternalServiceError("Embedding provider returned no vectors")
+  }
   if (vectors.some((vector) => vector.length !== env.embeddings.dimensions)) {
-    throw new ExternalServiceError("Embedding dimensions mismatch")
+    const actualDimensions = vectors[0]?.length ?? 0
+    throw new ExternalServiceError(
+      `Embedding dimensions mismatch: expected ${env.embeddings.dimensions}, got ${actualDimensions}. ` +
+        "Update EMBEDDING_DIMENSIONS or use a model that supports the requested dimensions."
+    )
   }
   if (vectors.some((vector) => vector.some((value) => !Number.isFinite(value)))) {
     throw new ExternalServiceError("Embedding provider returned non-finite values")
   }
 }
 
-const requestEmbeddings = async (batch: ReadonlyArray<string>): Promise<ReadonlyArray<ReadonlyArray<number>>> => {
+const requestEmbeddings = async (
+  batch: ReadonlyArray<string>,
+  options: { includeDimensions: boolean } = { includeDimensions: true }
+): Promise<ReadonlyArray<ReadonlyArray<number>>> => {
   const maxAttempts = 3
   let delayMs = 200
 
@@ -60,27 +80,28 @@ const requestEmbeddings = async (batch: ReadonlyArray<string>): Promise<Readonly
     const timer = setTimeout(() => controller.abort(), env.embeddings.timeoutMs)
 
     try {
-      const response = await fetch(`${env.embeddings.baseUrl}/embeddings`, {
+      const response = await fetch(buildEmbeddingsUrl(env.embeddings.baseUrl), {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${env.embeddings.apiKey}`,
-          "Content-Type": "application/json"
-        },
+        headers: buildHeaders(),
         body: JSON.stringify({
           model: env.embeddings.model,
           input: batch,
-          dimensions: env.embeddings.dimensions
+          ...(options.includeDimensions ? { dimensions: env.embeddings.dimensions } : {})
         }),
         signal: controller.signal
       })
 
       if (!response.ok) {
+        const body = await response.text()
+        if (options.includeDimensions && isUnsupportedDimensionsFailure(response.status, body)) {
+          return requestEmbeddings(batch, { includeDimensions: false })
+        }
         if (isTransientStatus(response.status) && attempt < maxAttempts) {
           await sleep(delayMs + Math.round(Math.random() * 100))
           delayMs *= 2
           continue
         }
-        throw new ExternalServiceError("Embedding request failed", { status: response.status, body: await response.text() })
+        throw new ExternalServiceError("Embedding request failed", { status: response.status, body })
       }
 
       const payload = Schema.decodeUnknownSync(EmbeddingsResponseSchema)(await response.json())
