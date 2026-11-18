@@ -8,7 +8,9 @@ module.exports = {
       interpreter: "none",
       exec_mode: "fork",
       instances: 1,
-      autorestart: false,
+      autorestart: true,
+      stop_exit_codes: [0],
+      restart_delay: 10000,
       watch: false,
       time: true
     }
