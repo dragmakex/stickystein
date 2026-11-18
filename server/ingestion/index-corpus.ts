@@ -12,6 +12,8 @@ const isProviderUnavailable = (error: unknown): boolean => {
   return (
     status === 502 ||
     status === 503 ||
+    status === 429 ||
+    /rate limit|too many requests/i.test(body) ||
     /no_upstream_keys|no eligible swissai keys|upstream unavailable/i.test(body)
   )
 }
