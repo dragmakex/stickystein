@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import { MessageInput } from "@/components/chat/message-input"
 import { MessageList } from "@/components/chat/message-list"
 import { SensitiveCorpusDisclaimer } from "@/components/chat/sensitive-corpus-disclaimer"
-import { authClient } from "@/lib/auth"
 import { playUiAnswerReady } from "@/lib/ui/sound"
 
 type ChatMessage = {
@@ -23,8 +22,6 @@ type ChatMessage = {
 }
 
 export function ChatShell() {
-  const { data: authSession } = authClient.useSession()
-  const [bypassAccess, setBypassAccess] = useState(false)
   const [threadId, setThreadId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ReadonlyArray<ChatMessage>>([])
   const [pending, setPending] = useState(false)
@@ -47,26 +44,6 @@ export function ChatShell() {
   }
 
   useEffect(() => {
-    void (async () => {
-      try {
-        const response = await fetch("/api/auth/bypass/status", { cache: "no-store" })
-        const body = await response.json()
-        setBypassAccess(Boolean(body?.bypass))
-      } catch {
-        setBypassAccess(false)
-      }
-    })()
-  }, [])
-
-  const canChat = Boolean(authSession?.user) || bypassAccess
-
-  useEffect(() => {
-    if (!canChat) {
-      setThreadId(null)
-      setMessages([])
-      setPending(false)
-      return
-    }
     if (threadId) return
 
     void (async () => {
@@ -78,7 +55,7 @@ export function ChatShell() {
       }
       setError(body?.error?.message ?? "Could not open a thread")
     })()
-  }, [canChat, threadId])
+  }, [threadId])
 
   useEffect(() => {
     if (!pending) {
@@ -214,7 +191,7 @@ export function ChatShell() {
             </div>
           </div>
         ) : null}
-        <MessageInput onSend={onSend} disabled={pending || !threadId || !canChat} />
+        <MessageInput onSend={onSend} disabled={pending || !threadId} />
       </div>
     </section>
   )

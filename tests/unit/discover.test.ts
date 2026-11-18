@@ -51,3 +51,19 @@ test("discoverLocalPdfs normalizes DataSet-wrapped volume paths to VOL-prefixed 
   const discovered = await discoverLocalPdfs(root)
   expect(discovered.map((item) => item.filename)).toEqual(["VOL00012/IMAGES/0001/EFTA02730265.pdf"])
 })
+
+test("discoverLocalPdfs preserves the volume when scanning a dataset directory directly", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "efiles-discover-"))
+  createdDirs.push(root)
+
+  for (const dataset of [9, 10]) {
+    const datasetRoot = path.join(root, `DataSet ${dataset}`)
+    await mkdir(path.join(datasetRoot, "page-00000"), { recursive: true })
+    await writeFile(path.join(datasetRoot, "page-00000", `EFTA${dataset}.pdf`), "fake")
+
+    const discovered = await discoverLocalPdfs(datasetRoot)
+    expect(discovered.map((item) => item.filename)).toEqual([
+      `VOL${String(dataset).padStart(5, "0")}/page-00000/EFTA${dataset}.pdf`
+    ])
+  }
+})

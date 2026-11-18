@@ -7,7 +7,8 @@ export const BYPASS_COOKIE_NAME = "stickystein_bypass"
 export const BYPASS_USER_ID = "bypass_user"
 const BYPASS_TTL_MS = 1000 * 60 * 60 * 24 * 30
 
-const sign = (expiresAt: number): string => createHmac("sha256", env.auth.secret).update(`bypass:${expiresAt}`).digest("hex")
+const sign = (expiresAt: number): string =>
+  createHmac("sha256", env.auth.secret).update(`bypass:${env.chatBypassSecret}:${expiresAt}`).digest("hex")
 
 const safeEqual = (left: string, right: string): boolean => {
   const leftBuffer = Buffer.from(left)
@@ -28,7 +29,7 @@ export const createBypassCookieValue = (now = Date.now()): string => {
 }
 
 export const isValidBypassCookieValue = (value: string | undefined, now = Date.now()): boolean => {
-  if (!value) return false
+  if (!value || !env.chatBypassSecret.trim()) return false
   const [expiresAtRaw, signature] = value.split(".")
   if (!expiresAtRaw || !signature) return false
 

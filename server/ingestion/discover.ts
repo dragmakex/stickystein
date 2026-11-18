@@ -53,6 +53,8 @@ const walk = async (rootDir: string, currentDir: string, out: DiscoveredPdf[]): 
 
 export const discoverLocalPdfs = async (dataDir = "data"): Promise<ReadonlyArray<DiscoveredPdf>> => {
   const docs: DiscoveredPdf[] = []
-  await walk(dataDir, dataDir, docs)
+  const rootName = path.basename(path.resolve(dataDir))
+  const rootDir = datasetNameToVolume(rootName) || /^VOL\d+$/i.test(rootName) ? path.dirname(dataDir) : dataDir
+  await walk(rootDir, dataDir, docs)
   return docs.sort((left, right) => left.filename.localeCompare(right.filename))
 }

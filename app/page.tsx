@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { ChatAccessActions } from "@/components/auth/chat-access-actions"
-import { SecretBypassButton } from "@/components/auth/secret-bypass-button"
 import { CorpusListPanel } from "@/components/chat/corpus-list-panel"
 
 export default function HomePage() {
@@ -10,7 +9,6 @@ export default function HomePage() {
         <div className="window-title landing-titlebar">
           <span className="landing-titlebar-label">STICKYSTEIN.EXE</span>
           <span className="landing-titlebar-controls">
-            <SecretBypassButton />
             <span className="landing-titlebar-button" aria-hidden="true">
               <span className="landing-titlebar-icon landing-titlebar-icon-maximize" />
             </span>

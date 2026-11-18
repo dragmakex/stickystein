@@ -64,6 +64,11 @@ const requestWithRetry = async (input: LlmGenerateInput): Promise<LlmGenerateOut
             messages: input.messages,
             temperature: input.temperature ?? env.llm.temperature,
             max_tokens: input.maxOutputTokens ?? env.llm.maxOutputTokens,
+            // Qwen3 hybrid models on the SwissAI LB otherwise spend the
+            // completion budget on hidden reasoning and can return empty
+            // content. RAG answers are grounded in the supplied passages, so
+            // answer directly and keep the latency predictable.
+            chat_template_kwargs: { enable_thinking: false },
             stream: input.stream ?? false
           }),
           signal

@@ -74,14 +74,14 @@ if (!database.hasVector) {
 }
 
 console.log(`[index:check] Database ok (${database.database})`)
-console.log("[index:check] Checking Ollama embeddings")
+console.log(`[index:check] Checking embeddings at ${env.embeddings.baseUrl || "(unconfigured)"}`)
 const embeddingLength = await (async () => {
   try {
     return await checkEmbeddings()
   } catch (error) {
     return fail(
       `Embedding provider check failed${error instanceof Error ? `: ${error.message}` : ""}. ` +
-        "Ensure Ollama is running and the embedding model is available locally."
+        "Ensure the configured embedding endpoint and model are reachable."
     )
   }
 })()

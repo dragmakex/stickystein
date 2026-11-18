@@ -155,7 +155,7 @@ export const OpenAiCompatibleEmbeddingProvider: EmbeddingProvider = {
   name: "openai-compatible",
   dimensions: env.embeddings.dimensions,
   async embedTexts(texts) {
-    if (!env.embeddings.apiKey || !env.embeddings.baseUrl || !env.embeddings.model) {
+    if (!env.embeddings.baseUrl || !env.embeddings.model) {
       throw new ExternalServiceError("Embedding provider is not configured")
     }
 
